@@ -1,0 +1,6 @@
+build:
+  cmake: .
+  kconfig: Kconfig
+  # So dts/bindings/ in this module is found, which is how a board can pick this
+  # driver by compatible alone.
+  dts_root: .

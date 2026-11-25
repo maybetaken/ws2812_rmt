@@ -1,0 +1,35 @@
+# Copyright (c) 2026 maybetaken
+# SPDX-License-Identifier: Apache-2.0
+description: |
+  WS2812-class addressable LEDs driven by an ESP32 RMT TX channel: each data bit
+  becomes one RMT symbol whose high time is the WS2812 phase (t0H 400 ns, t1H 800 ns
+  of a 1250 ns bit), counted by the peripheral rather than by the CPU.
+
+  Example:
+
+    led_strip0: led-strip {
+            compatible = "espressif,esp32-ws2812-rmt";
+            data-gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>;
+            chain-length = <1>;
+    };
+
+compatible: "espressif,esp32-ws2812-rmt"
+
+include: ws2812.yaml
+
+properties:
+  data-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      The strip's data line. Configured as an output, then routed to the channel's RMT
+      signal through the GPIO matrix, so no pinmux table entry is needed.
+
+  espressif,rmt-channel:
+    type: int
+    default: 0
+    description: |
+      RMT TX channel. One channel per DT instance, none allocated: two strip nodes must
+      name different channels, and the channel must exist on the part - which depends on
+      the generation (the C3 declares 4 data registers with 2 TX config sets, the C5/C6 2),
+      so the driver checks it at init rather than the binding.

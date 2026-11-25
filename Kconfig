@@ -1,0 +1,29 @@
+# WS2812-over-RMT driver for ESP32 parts (Zephyr module)
+# Copyright (c) 2026 maybetaken
+# SPDX-License-Identifier: Apache-2.0
+
+config LED_STRIP_ESP_RMT
+	bool "WS2812 LED strip over the ESP32 RMT peripheral"
+	depends on DT_HAS_ESPRESSIF_ESP32_WS2812_RMT_ENABLED
+	select LED_STRIP
+	default y
+	help
+	  Drives WS2812-class addressable LEDs through an RMT TX channel, behind
+	  Zephyr's standard led_strip API. Enabled by having a node with compatible
+	  "espressif,esp32-ws2812-rmt" in the devicetree; no board has to name a
+	  Kconfig symbol to get it.
+
+	  Zephyr ships no led_strip driver for Espressif RMT, and CPU bit-banging
+	  cannot hold the phase widths here: on an ESP32-C3 a GPIO store costs 312 ns
+	  and a system-clock read 687 ns against a 400 ns phase.
+
+config WS2812_RMT_PROBE
+	bool "Ask this part how an RMT TX frame is ended, once at boot"
+	depends on LED_STRIP_ESP_RMT
+	default n
+	help
+	  Puts each candidate frame-end setting (tx_lim value, EOF symbol, memory wrap)
+	  through one test frame at driver init and logs what the hardware answered.
+	  For bringing the driver up on a part it has not run on, where "the two register
+	  generations look the same in the ll layer" is not a safe assumption. Costs a
+	  few tens of milliseconds at boot and about ten log lines.
